@@ -1,7 +1,7 @@
 package router
 
 import (
-	"gitlab.baidu.com/hanjianqi/mqproxy/server/action"
+	"github.com/janqii/mqproxy/server/action"
 	"net/http"
 )
 

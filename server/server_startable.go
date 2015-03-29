@@ -2,9 +2,9 @@ package server
 
 import (
 	"fmt"
+	"github.com/janqii/mqproxy/server/router"
+	"github.com/janqii/mqproxy/utils"
 	"gitlab.baidu.com/go/sarama"
-	"gitlab.baidu.com/hanjianqi/mqproxy/server/router"
-	"gitlab.baidu.com/hanjianqi/mqproxy/utils"
 	"log"
 	"net/http"
 	"os"
@@ -38,19 +38,6 @@ func Startable(cfg *ProxyConfig) error {
 	statMux = make(map[string]func(http.ResponseWriter, *http.Request))
 	proxyMux = make(map[string]func(http.ResponseWriter, *http.Request))
 
-	controller := &ProxyController{
-		ZkClient:     zkClient,
-		IsRunning:    false,
-		IsController: false,
-		ID:           cfg.ID,
-	}
-	controller.Startup()
-
-	healthChecker := &ZookeeperHealthChecker{
-		ZkClient:  zkClient,
-		IsRunning: false,
-	}
-
 	statHttpServer := &HttpServer{
 		Addr:            ":" + cfg.StatServerPort,
 		Handler:         &HttpHandler{Mux: statMux},
@@ -62,8 +49,6 @@ func Startable(cfg *ProxyConfig) error {
 		Wg:              wg,
 		Mux:             statMux,
 		ZkClient:        zkClient,
-		Controller:      controller,
-		HealthChecker:   healthChecker,
 	}
 	proxyHttpServer := &HttpServer{
 		Addr:            ":" + cfg.HttpServerPort,
@@ -76,15 +61,10 @@ func Startable(cfg *ProxyConfig) error {
 		Wg:              wg,
 		Mux:             proxyMux,
 		ZkClient:        zkClient,
-		Controller:      controller,
-		HealthChecker:   healthChecker,
 	}
 
 	statHttpServer.Startup()
 	proxyHttpServer.Startup()
-
-	/*tell everyone we are alive*/
-	healthChecker.Startup()
 
 	log.Println("MQ Proxy is running...")
 	wg.Wait()

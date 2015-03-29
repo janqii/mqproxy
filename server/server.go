@@ -1,7 +1,7 @@
 package server
 
 import (
-	"gitlab.baidu.com/hanjianqi/mqproxy/utils"
+	"github.com/janqii/mqproxy/utils"
 	"log"
 	"net/http"
 	"sync"
@@ -19,8 +19,6 @@ type HttpServer struct {
 	Wg              *sync.WaitGroup
 	Mux             map[string]func(http.ResponseWriter, *http.Request)
 	ZkClient        *utils.ZK
-	Controller      *ProxyController
-	HealthChecker   *ZookeeperHealthChecker
 }
 
 type NsheadServer struct {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gitlab.baidu.com/hanjianqi/mqproxy/server"
+	"github.com/janqii/mqproxy/server"
 	"log"
 )
 

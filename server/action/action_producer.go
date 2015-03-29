@@ -1,7 +1,7 @@
 package action
 
 import (
-	"gitlab.baidu.com/hanjianqi/mqproxy/serializer"
+	"github.com/janqii/mqproxy/serializer"
 	"io"
 	"io/ioutil"
 	"log"
