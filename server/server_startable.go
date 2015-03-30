@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/janqii/mqproxy/global"
 	"github.com/janqii/mqproxy/server/router"
 	"github.com/janqii/mqproxy/utils"
 	"gitlab.baidu.com/go/sarama"
@@ -9,10 +10,6 @@ import (
 	"net/http"
 	"os"
 	"sync"
-)
-
-var (
-	gKafkaClient *sarama.Client
 )
 
 func Startable(cfg *ProxyConfig) error {
@@ -25,7 +22,7 @@ func Startable(cfg *ProxyConfig) error {
 		return err
 	}
 
-	gKafkaClient, err = newKafkaClient(zkClient)
+	global.KafkaClient, err = newKafkaClient(zkClient)
 	if err != nil {
 		log.Printf("create kafka client error")
 		return err
