@@ -1,18 +1,15 @@
 package server
 
 import (
-	"fmt"
 	"github.com/janqii/mqproxy/global"
 	"github.com/janqii/mqproxy/server/router"
 	"github.com/janqii/mqproxy/utils"
-	"gitlab.baidu.com/go/sarama"
 	"log"
 	"net/http"
-	"os"
 	"sync"
 )
 
-func Startable(cfg *ProxyConfig) error {
+func Startable(cfg *global.ProxyConfig) error {
 	wg := new(sync.WaitGroup)
 
 	var zkClient *utils.ZK
@@ -22,8 +19,7 @@ func Startable(cfg *ProxyConfig) error {
 		return err
 	}
 
-	global.KafkaClient, err = newKafkaClient(zkClient)
-	if err != nil {
+	if _, err = global.NewKafkaClient(zkClient); err != nil {
 		log.Printf("create kafka client error")
 		return err
 	}
@@ -68,32 +64,4 @@ func Startable(cfg *ProxyConfig) error {
 	log.Println("MQ Proxy is exiting...")
 
 	return nil
-}
-
-func newKafkaClient(zkClient *utils.ZK) (*sarama.Client, error) {
-	brokers, err := zkClient.Brokers()
-	if err != nil {
-		return nil, err
-	}
-
-	brokerList := make([]string, 0, len(brokers))
-	for _, broker := range brokers {
-		brokerList = append(brokerList, broker)
-	}
-
-	hostname, err := os.Hostname()
-	if err != nil {
-		return nil, err
-	}
-
-	pid := os.Getpid()
-	clientName := fmt.Sprintf("%s:%d", hostname, pid)
-
-	fmt.Println(clientName)
-	var client *sarama.Client
-	if client, err = sarama.NewClient(clientName, brokerList, nil); err != nil {
-		return nil, err
-	}
-
-	return client, nil
 }
