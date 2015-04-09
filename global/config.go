@@ -29,6 +29,16 @@ type ProxyConfig struct {
 	ZookeeperAddr    []string
 	ZookeeperChroot  string
 	ZookeeperTimeout time.Duration
+
+	//Producer Configure
+	PartitionerStrategy string //Hash, Random, RoundRobin
+	WaitAckStrategy     string // NoRespond, WaitForLocal, WaitForAll
+	WaitAckTimeoutMs    time.Duration
+	CompressionStrategy string //None, Gzip, Snappy
+	MaxMessageBytes     int
+	ChannelBufferSize   int
+
+	ProducerPoolSize int
 }
 
 func NewProxyConfig() (*ProxyConfig, error) {
@@ -62,6 +72,14 @@ func (cfg *ProxyConfig) Parse() error {
 	zookeeperAddr := flag.String("zookeeper_addr", "", "zookeeper address")
 	zookeeperChroot := flag.String("zookeeper_chroot", "", "zookeeper chroot")
 	zookeeperTimeout := flag.Int64("zookeeper_timeout", 1, "zookeeper connect timeout")
+
+	partitionerStrategy := flag.String("partitioner_strategy", "Hash", "partitioner strategy")
+	waitAckStrategy := flag.String("wait_ack_strategy", "WaitForLocal", "The level of acknowledgement reliability needed from the broker")
+	waitAckTimeoutMs := flag.Int64("wait_ack_timeout_ms", 0, "The maximum duration the broker will wait the receipt of the number of RequiredAcks.")
+	compressionStrategy := flag.String("compression_strategy", "None", "The type of compression to use on messages")
+	maxMessageBytes := flag.Int("max_message_bytes", 1000000, "The maximum permitted size of a message")
+	channelBufferSize := flag.Int("channel_buffer_size", 0, "The size of the buffers of the channels between the different goroutines")
+	producerPoolSize := flag.Int("producer_pool_size", 256, "The size of producer pool")
 
 	flag.Parse()
 
@@ -106,6 +124,15 @@ func (cfg *ProxyConfig) Parse() error {
 	cfg.ZookeeperAddr = strings.Split(*zookeeperAddr, ",")
 	cfg.ZookeeperChroot = *zookeeperChroot
 	cfg.ZookeeperTimeout = time.Duration(*zookeeperTimeout) * time.Second
+
+	cfg.PartitionerStrategy = *partitionerStrategy
+	cfg.WaitAckStrategy = *waitAckStrategy
+	cfg.WaitAckTimeoutMs = time.Duration(*waitAckTimeoutMs) * time.Millisecond
+	cfg.CompressionStrategy = *compressionStrategy
+	cfg.MaxMessageBytes = *maxMessageBytes
+	cfg.ChannelBufferSize = *channelBufferSize
+
+	cfg.ProducerPoolSize = *producerPoolSize
 
 	return nil
 }

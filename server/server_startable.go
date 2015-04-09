@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/janqii/mqproxy/global"
+	"github.com/janqii/mqproxy/producer/kafka"
 	"github.com/janqii/mqproxy/server/router"
 	"github.com/janqii/mqproxy/utils"
 	"log"
@@ -12,15 +13,34 @@ import (
 func Startable(cfg *global.ProxyConfig) error {
 	wg := new(sync.WaitGroup)
 
-	var zkClient *utils.ZK
-	zkClient, err := utils.NewZK(cfg.ZookeeperAddr, cfg.ZookeeperChroot, cfg.ZookeeperTimeout)
-	if err != nil {
+	var (
+		err      error
+		zkClient *utils.ZK
+	)
+
+	if zkClient, err = utils.NewZK(cfg.ZookeeperAddr, cfg.ZookeeperChroot, cfg.ZookeeperTimeout); err != nil {
 		log.Printf("init zkClient error: %v", err)
 		return err
 	}
 
-	if _, err = global.NewKafkaClient(zkClient); err != nil {
-		log.Printf("create kafka client error")
+	if global.KafkaClient, err = global.NewKafkaClient(zkClient); err != nil {
+		log.Printf("create kafka client error: %v", err)
+		return err
+	}
+
+	pcfg := &producer.KafkaProducerConfig{
+		PartitionerStrategy: cfg.PartitionerStrategy,
+		WaitAckStrategy:     cfg.WaitAckStrategy,
+		WaitAckTimeoutMs:    cfg.WaitAckTimeoutMs,
+		CompressionStrategy: cfg.CompressionStrategy,
+		MaxMessageBytes:     cfg.MaxMessageBytes,
+		ChannelBufferSize:   cfg.ChannelBufferSize,
+	}
+
+	global.ProducerPool, err = global.NewKafkaProducerPool(global.KafkaClient, pcfg, cfg.ProducerPoolSize)
+	defer global.DestoryKafkaProducerPool(global.ProducerPool)
+	if err != nil {
+		log.Printf("create kafkafka producer pool error: %v", err)
 		return err
 	}
 

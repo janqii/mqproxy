@@ -1,6 +1,7 @@
 package action
 
 import (
+	"github.com/janqii/mqproxy/global"
 	"github.com/janqii/mqproxy/producer/kafka"
 	"github.com/janqii/mqproxy/serializer"
 	"io"
@@ -35,7 +36,7 @@ func HttpProducerAction(w http.ResponseWriter, r *http.Request) {
 			make([]producer.MessageLocation, 0),
 		}
 	} else {
-		resData, err = producer.SendMessage(reqData)
+		resData, err = global.ProducerPool.GetProducer().SendMessage(reqData)
 		if err != nil {
 			log.Printf("producer SendMessage error, %v", err)
 		}
