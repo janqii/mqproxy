@@ -70,7 +70,8 @@ func (kp *KafkaProducer) SendMessage(req Request) (Response, error) {
 	select {
 	case msg := <-kp.producer.Errors():
 		return Response{-1, msg.Err.Error(), make([]MessageLocation, 0)}, msg.Err
-	case <-kp.producer.Successes():
+	case msg := <-kp.producer.Successes():
+		fmt.Println(msg)
 		return Response{0, "ok", make([]MessageLocation, 0)}, nil
 	}
 }
@@ -110,6 +111,7 @@ func NewProducerConfig(cfg *KafkaProducerConfig) *sarama.ProducerConfig {
 
 	producerConfig.MaxMessageBytes = cfg.MaxMessageBytes
 	producerConfig.ChannelBufferSize = cfg.ChannelBufferSize
+	ProducerConfig.AckSuccesses = true
 
 	return producerConfig
 }
