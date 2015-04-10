@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-func Startable(cfg *global.ProxyConfig) error {
+func Startable(cfg *ProxyConfig) error {
 	wg := new(sync.WaitGroup)
 
 	var (

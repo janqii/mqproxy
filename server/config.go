@@ -1,4 +1,4 @@
-package global
+package server
 
 import (
 	"errors"
@@ -46,8 +46,6 @@ func NewProxyConfig() (*ProxyConfig, error) {
 	if err := cfg.Parse(); err != nil {
 		return nil, err
 	}
-
-	Config = cfg
 
 	return cfg, nil
 }

@@ -1,13 +1,12 @@
 package main
 
 import (
-	"github.com/janqii/mqproxy/global"
 	"github.com/janqii/mqproxy/server"
 	"log"
 )
 
 func main() {
-	cfg, err := global.NewProxyConfig()
+	cfg, err := server.NewProxyConfig()
 	if err != nil {
 		log.Fatalf("parse config error, %v", err)
 	}
