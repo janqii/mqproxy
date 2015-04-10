@@ -40,7 +40,7 @@ func Startable(cfg *ProxyConfig) error {
 	global.ProducerPool, err = global.NewKafkaProducerPool(global.KafkaClient, pcfg, cfg.ProducerPoolSize)
 	defer global.DestoryKafkaProducerPool(global.ProducerPool)
 	if err != nil {
-		log.Printf("create kafkafka producer pool error: %v", err)
+		log.Printf("create kafka producer pool error: %v", err)
 		return err
 	}
 
