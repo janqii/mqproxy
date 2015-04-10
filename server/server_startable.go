@@ -22,11 +22,13 @@ func Startable(cfg *ProxyConfig) error {
 		log.Printf("init zkClient error: %v", err)
 		return err
 	}
+	defer zkClient.Close()
 
 	if global.KafkaClient, err = global.NewKafkaClient(zkClient); err != nil {
 		log.Printf("create kafka client error: %v", err)
 		return err
 	}
+	defer global.KafkaClient.Close()
 
 	pcfg := &producer.KafkaProducerConfig{
 		PartitionerStrategy: cfg.PartitionerStrategy,
@@ -61,7 +63,6 @@ func Startable(cfg *ProxyConfig) error {
 		RouterFunc:      router.StatServerRouter,
 		Wg:              wg,
 		Mux:             statMux,
-		ZkClient:        zkClient,
 	}
 	proxyHttpServer := &HttpServer{
 		Addr:            ":" + cfg.HttpServerPort,
@@ -73,11 +74,13 @@ func Startable(cfg *ProxyConfig) error {
 		RouterFunc:      router.ProxyServerRouter,
 		Wg:              wg,
 		Mux:             proxyMux,
-		ZkClient:        zkClient,
 	}
 
 	statHttpServer.Startup()
 	proxyHttpServer.Startup()
+
+	defer statHttpServer.ShutDown()
+	defer proxyHttpServer.ShutDown()
 
 	log.Println("MQ Proxy is running...")
 	wg.Wait()

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/janqii/mqproxy/utils"
 	"log"
 	"net/http"
 	"sync"
@@ -18,7 +17,6 @@ type HttpServer struct {
 	RouterFunc      func(map[string]func(http.ResponseWriter, *http.Request))
 	Wg              *sync.WaitGroup
 	Mux             map[string]func(http.ResponseWriter, *http.Request)
-	ZkClient        *utils.ZK
 }
 
 type NsheadServer struct {
@@ -33,9 +31,17 @@ func (s *HttpServer) Startup() {
 	go startupHttpServer(s)
 }
 
+func (s *HttpServer) ShutDown() {
+	shutdownHttpServer(s)
+}
+
 func (s *NsheadServer) Startup() {
 	s.Wg.Add(1)
 	go startupNsheadServer(s)
+}
+
+func (s *NsheadServer) ShutDown() {
+	shutdownNsheadServer(s)
 }
 
 func startupHttpServer(hs *HttpServer) {
