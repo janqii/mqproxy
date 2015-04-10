@@ -20,8 +20,8 @@ type Response struct {
 }
 
 type MessageLocation struct {
-	Partition int
-	Offset    int
+	Partition int32
+	Offset    int64
 }
 
 type KafkaProducer struct {
@@ -71,8 +71,11 @@ func (kp *KafkaProducer) SendMessage(req Request) (Response, error) {
 	case msg := <-kp.producer.Errors():
 		return Response{-1, msg.Err.Error(), make([]MessageLocation, 0)}, msg.Err
 	case msg := <-kp.producer.Successes():
-		fmt.Println(msg)
-		return Response{0, "ok", make([]MessageLocation, 0)}, nil
+		//        arr := [1]MessageLocation{}
+		return Response{0, "ok", []MessageLocation{{
+			Partition: msg.Partition(),
+			Offset:    msg.Offset(),
+		}}}, nil
 	}
 }
 
@@ -111,7 +114,7 @@ func NewProducerConfig(cfg *KafkaProducerConfig) *sarama.ProducerConfig {
 
 	producerConfig.MaxMessageBytes = cfg.MaxMessageBytes
 	producerConfig.ChannelBufferSize = cfg.ChannelBufferSize
-	ProducerConfig.AckSuccesses = true
+	producerConfig.AckSuccesses = true
 
 	return producerConfig
 }
