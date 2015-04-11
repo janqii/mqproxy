@@ -79,8 +79,8 @@ func Startable(cfg *ProxyConfig) error {
 	statHttpServer.Startup()
 	proxyHttpServer.Startup()
 
-	defer statHttpServer.ShutDown()
-	defer proxyHttpServer.ShutDown()
+	defer statHttpServer.Shutdown()
+	defer proxyHttpServer.Shutdown()
 
 	log.Println("MQ Proxy is running...")
 	wg.Wait()

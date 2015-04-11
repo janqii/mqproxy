@@ -31,7 +31,7 @@ func (s *HttpServer) Startup() {
 	go startupHttpServer(s)
 }
 
-func (s *HttpServer) ShutDown() {
+func (s *HttpServer) Shutdown() {
 	shutdownHttpServer(s)
 }
 
@@ -40,7 +40,7 @@ func (s *NsheadServer) Startup() {
 	go startupNsheadServer(s)
 }
 
-func (s *NsheadServer) ShutDown() {
+func (s *NsheadServer) Shutdown() {
 	shutdownNsheadServer(s)
 }
 
