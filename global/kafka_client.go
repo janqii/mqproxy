@@ -2,8 +2,8 @@ package global
 
 import (
 	"fmt"
+	"github.com/Shopify/sarama"
 	"github.com/janqii/mqproxy/utils"
-	"gitlab.baidu.com/go/sarama"
 	"os"
 )
 

@@ -1,7 +1,7 @@
 package producer
 
 import (
-	"gitlab.baidu.com/go/sarama"
+	"github.com/Shopify/sarama"
 	"gopkg.in/vmihailenco/msgpack.v2"
 	"sync"
 	"time"

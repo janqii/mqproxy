@@ -1,6 +1,6 @@
 package global
 
-import "gitlab.baidu.com/go/sarama"
+import "github.com/Shopify/sarama"
 
 var (
 	KafkaClient  *sarama.Client

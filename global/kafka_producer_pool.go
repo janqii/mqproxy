@@ -1,8 +1,8 @@
 package global
 
 import (
+	"github.com/Shopify/sarama"
 	"github.com/janqii/mqproxy/producer/kafka"
-	"gitlab.baidu.com/go/sarama"
 )
 
 type KafkaProducerPool struct {
