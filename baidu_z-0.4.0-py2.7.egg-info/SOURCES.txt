@@ -1,8 +1,0 @@
-baidu_z.py
-setup.py
-z
-baidu_z.egg-info/PKG-INFO
-baidu_z.egg-info/SOURCES.txt
-baidu_z.egg-info/dependency_links.txt
-baidu_z.egg-info/requires.txt
-baidu_z.egg-info/top_level.txt
