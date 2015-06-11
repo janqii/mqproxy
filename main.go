@@ -7,6 +7,7 @@ import (
 
 func main() {
 	cfg, err := server.NewProxyConfig()
+
 	if err != nil {
 		log.Fatalf("parse config error, %v", err)
 	}
