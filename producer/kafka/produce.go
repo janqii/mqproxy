@@ -1,7 +1,7 @@
 package producer
 
 import (
-	"github.com/Shopify/sarama"
+	"gopkg.in/Shopify/sarama.v1"
 	"gopkg.in/vmihailenco/msgpack.v2"
 	"sync"
 	"time"
@@ -25,11 +25,12 @@ type MessageLocation struct {
 }
 
 type KafkaProducer struct {
-	producer *sarama.Producer
+	producer sarama.SyncProducer
 	m        sync.Mutex
 }
 
 type KafkaProducerConfig struct {
+	Addrs               []string
 	PartitionerStrategy string
 	WaitAckStrategy     string
 	WaitAckTimeoutMs    time.Duration
@@ -38,12 +39,12 @@ type KafkaProducerConfig struct {
 	ChannelBufferSize   int
 }
 
-func NewKafkaProducer(client *sarama.Client, config *KafkaProducerConfig) (*KafkaProducer, error) {
+func NewKafkaProducer(config *KafkaProducerConfig) (*KafkaProducer, error) {
 	var err error
 
 	kp := new(KafkaProducer)
 	pcfg := NewProducerConfig(config)
-	if kp.producer, err = sarama.NewProducer(client, pcfg); err != nil {
+	if kp.producer, err = sarama.NewSyncProducer(config.Addrs, pcfg); err != nil {
 		return nil, err
 	}
 
@@ -61,60 +62,59 @@ func (kp *KafkaProducer) SendMessage(req Request) (Response, error) {
 		return Response{-1, err.Error(), make([]MessageLocation, 0)}, err
 	}
 
-	kp.producer.Input() <- &sarama.MessageToSend{
+	msg := &sarama.ProducerMessage{
 		Topic: req.Topic,
 		Key:   sarama.StringEncoder(req.PartitionKey),
 		Value: sarama.ByteEncoder(b),
 	}
 
-	select {
-	case msg := <-kp.producer.Errors():
-		return Response{-1, msg.Err.Error(), make([]MessageLocation, 0)}, msg.Err
-	case msg := <-kp.producer.Successes():
-		//        arr := [1]MessageLocation{}
-		return Response{0, "ok", []MessageLocation{{
-			Partition: msg.Partition(),
-			Offset:    msg.Offset(),
-		}}}, nil
+	partition, offset, err := kp.producer.SendMessage(msg)
+	if err != nil {
+		return Response{-1, err.Error(), make([]MessageLocation, 0)}, err
 	}
+
+	return Response{0, "ok", []MessageLocation{{
+		Partition: partition,
+		Offset:    offset,
+	}}}, nil
 }
 
 func (kp *KafkaProducer) Close() error {
 	return kp.producer.Close()
 }
 
-func NewProducerConfig(cfg *KafkaProducerConfig) *sarama.ProducerConfig {
-	producerConfig := new(sarama.ProducerConfig)
+func NewProducerConfig(cfg *KafkaProducerConfig) *sarama.Config {
+	config := new(sarama.Config)
 
 	if cfg.PartitionerStrategy == "Random" {
-		producerConfig.Partitioner = sarama.NewRandomPartitioner
+		config.Producer.Partitioner = sarama.NewRandomPartitioner
 	} else if cfg.PartitionerStrategy == "RoundRobin" {
-		producerConfig.Partitioner = sarama.NewRoundRobinPartitioner
+		config.Producer.Partitioner = sarama.NewRoundRobinPartitioner
 	} else {
-		producerConfig.Partitioner = sarama.NewHashPartitioner
+		config.Producer.Partitioner = sarama.NewHashPartitioner
 	}
 
 	if cfg.WaitAckStrategy == "NoRespond" {
-		producerConfig.RequiredAcks = sarama.NoResponse
+		config.Producer.RequiredAcks = sarama.NoResponse
 	} else if cfg.WaitAckStrategy == "WaitForAll" {
-		producerConfig.RequiredAcks = sarama.WaitForAll
+		config.Producer.RequiredAcks = sarama.WaitForAll
 	} else {
-		producerConfig.RequiredAcks = sarama.WaitForLocal
+		config.Producer.RequiredAcks = sarama.WaitForLocal
 	}
 
-	producerConfig.Timeout = cfg.WaitAckTimeoutMs
+	config.Producer.Timeout = cfg.WaitAckTimeoutMs
 
 	if cfg.CompressionStrategy == "None" {
-		producerConfig.Compression = sarama.CompressionNone
+		config.Producer.Compression = sarama.CompressionNone
 	} else if cfg.CompressionStrategy == "Gzip" {
-		producerConfig.Compression = sarama.CompressionGZIP
+		config.Producer.Compression = sarama.CompressionGZIP
 	} else {
-		producerConfig.Compression = sarama.CompressionSnappy
+		config.Producer.Compression = sarama.CompressionSnappy
 	}
 
-	producerConfig.MaxMessageBytes = cfg.MaxMessageBytes
-	producerConfig.ChannelBufferSize = cfg.ChannelBufferSize
-	producerConfig.AckSuccesses = true
+	config.Producer.MaxMessageBytes = cfg.MaxMessageBytes
+	config.ChannelBufferSize = cfg.ChannelBufferSize
+	//	producerConfig.AckSuccesses = true
 
-	return producerConfig
+	return config
 }

@@ -4,33 +4,37 @@ import (
 	"github.com/janqii/mqproxy/global"
 	"github.com/janqii/mqproxy/producer/kafka"
 	"github.com/janqii/mqproxy/server/router"
-	"github.com/janqii/mqproxy/utils"
+	"github.com/wvanbergen/kazoo-go"
 	"log"
 	"net/http"
 	"sync"
 )
 
 func Startable(cfg *ProxyConfig) error {
+	var err error
 	wg := new(sync.WaitGroup)
 
-	var (
-		err      error
-		zkClient *utils.ZK
-	)
+	zkNodes, chroot := kazoo.ParseConnectionString(cfg.ZookeeperAddr)
+	zkConfig := &kazoo.Config{
+		Chroot:  chroot,
+		Timeout: cfg.ZookeeperTimeout,
+	}
 
-	if zkClient, err = utils.NewZK(cfg.ZookeeperAddr, cfg.ZookeeperChroot, cfg.ZookeeperTimeout); err != nil {
-		log.Printf("init zkClient error: %v", err)
+	zkProxy, err := kazoo.NewKazoo(zkNodes, zkConfig)
+	if err != nil {
+		log.Printf("NewKazoo error: %v", err)
 		return err
 	}
-	defer zkClient.Close()
+	defer zkProxy.Close()
 
-	if global.KafkaClient, err = global.NewKafkaClient(zkClient); err != nil {
-		log.Printf("create kafka client error: %v", err)
+	brokerList, err := zkProxy.BrokerList()
+	if err != nil {
+		log.Printf("get broker list error: %v", err)
 		return err
 	}
-	defer global.KafkaClient.Close()
 
 	pcfg := &producer.KafkaProducerConfig{
+		Addrs:               brokerList,
 		PartitionerStrategy: cfg.PartitionerStrategy,
 		WaitAckStrategy:     cfg.WaitAckStrategy,
 		WaitAckTimeoutMs:    cfg.WaitAckTimeoutMs,
@@ -39,7 +43,7 @@ func Startable(cfg *ProxyConfig) error {
 		ChannelBufferSize:   cfg.ChannelBufferSize,
 	}
 
-	global.ProducerPool, err = global.NewKafkaProducerPool(global.KafkaClient, pcfg, cfg.ProducerPoolSize)
+	global.ProducerPool, err = global.NewKafkaProducerPool(pcfg, cfg.ProducerPoolSize)
 	defer global.DestoryKafkaProducerPool(global.ProducerPool)
 	if err != nil {
 		log.Printf("create kafka producer pool error: %v", err)

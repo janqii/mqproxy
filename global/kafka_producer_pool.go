@@ -1,7 +1,6 @@
 package global
 
 import (
-	"github.com/Shopify/sarama"
 	"github.com/janqii/mqproxy/producer/kafka"
 )
 
@@ -11,7 +10,7 @@ type KafkaProducerPool struct {
 	curr      int
 }
 
-func NewKafkaProducerPool(client *sarama.Client, config *producer.KafkaProducerConfig, poolSize int) (*KafkaProducerPool, error) {
+func NewKafkaProducerPool(config *producer.KafkaProducerConfig, poolSize int) (*KafkaProducerPool, error) {
 	var err error
 
 	pool := &KafkaProducerPool{
@@ -21,7 +20,7 @@ func NewKafkaProducerPool(client *sarama.Client, config *producer.KafkaProducerC
 	}
 
 	for i := 0; i < poolSize; i++ {
-		if pool.producers[i], err = producer.NewKafkaProducer(client, config); err != nil {
+		if pool.producers[i], err = producer.NewKafkaProducer(config); err != nil {
 			return pool, err
 		}
 		pool.size++

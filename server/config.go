@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/janqii/mqproxy/internal/version"
 	"os"
-	"strings"
+	//	"strings"
 	"time"
 )
 
@@ -26,8 +26,7 @@ type ProxyConfig struct {
 	NsheadServerReadTimeout  time.Duration
 	NsheadServerWriteTimeout time.Duration
 
-	ZookeeperAddr    []string
-	ZookeeperChroot  string
+	ZookeeperAddr    string
 	ZookeeperTimeout time.Duration
 
 	//Producer Configure
@@ -68,7 +67,6 @@ func (cfg *ProxyConfig) Parse() error {
 	nsheadServerWriteTimeout := flag.Int64("nshead_server_write_timeout", 5000, "nshead server write timeout")
 
 	zookeeperAddr := flag.String("zookeeper_addr", "", "zookeeper address")
-	zookeeperChroot := flag.String("zookeeper_chroot", "", "zookeeper chroot")
 	zookeeperTimeout := flag.Int64("zookeeper_timeout", 1, "zookeeper connect timeout")
 
 	partitionerStrategy := flag.String("partitioner_strategy", "Hash", "partitioner strategy")
@@ -102,9 +100,6 @@ func (cfg *ProxyConfig) Parse() error {
 	if *zookeeperAddr == "" {
 		return errors.New("zookeeper_addr nil")
 	}
-	if *zookeeperChroot == "" {
-		return errors.New("zookeeper_chroot nil")
-	}
 
 	cfg.ID = *id
 	cfg.HttpServerPort = *httpServerPort
@@ -119,8 +114,7 @@ func (cfg *ProxyConfig) Parse() error {
 	cfg.NsheadServerReadTimeout = time.Duration(*nsheadServerReadTimeout) * time.Millisecond
 	cfg.NsheadServerWriteTimeout = time.Duration(*nsheadServerWriteTimeout) * time.Millisecond
 
-	cfg.ZookeeperAddr = strings.Split(*zookeeperAddr, ",")
-	cfg.ZookeeperChroot = *zookeeperChroot
+	cfg.ZookeeperAddr = *zookeeperAddr
 	cfg.ZookeeperTimeout = time.Duration(*zookeeperTimeout) * time.Second
 
 	cfg.PartitionerStrategy = *partitionerStrategy
