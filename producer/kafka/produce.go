@@ -31,6 +31,11 @@ type KafkaProducer struct {
 
 type KafkaProducerConfig struct {
 	Addrs               []string
+	MaxOpenRequests     int
+	DialTimeout         time.Duration
+	ReadTimeout         time.Duration
+	WriteTimeout        time.Duration
+	KeepAlive           time.Duration
 	PartitionerStrategy string
 	WaitAckStrategy     string
 	WaitAckTimeoutMs    time.Duration
@@ -86,6 +91,12 @@ func (kp *KafkaProducer) Close() error {
 func NewProducerConfig(cfg *KafkaProducerConfig) *sarama.Config {
 	config := new(sarama.Config)
 
+	config.Net.MaxOpenRequests = cfg.MaxOpenRequests
+	config.Net.DialTimeout = cfg.DialTimeout * time.Millisecond
+	config.Net.ReadTimeout = cfg.ReadTimeout * time.Millisecond
+	config.Net.WriteTimeout = cfg.WriteTimeout * time.Millisecond
+	config.Net.KeepAlive = cfg.KeepAlive * time.Millisecond
+
 	if cfg.PartitionerStrategy == "Random" {
 		config.Producer.Partitioner = sarama.NewRandomPartitioner
 	} else if cfg.PartitionerStrategy == "RoundRobin" {
@@ -114,7 +125,15 @@ func NewProducerConfig(cfg *KafkaProducerConfig) *sarama.Config {
 
 	config.Producer.MaxMessageBytes = cfg.MaxMessageBytes
 	config.ChannelBufferSize = cfg.ChannelBufferSize
-	//	producerConfig.AckSuccesses = true
+
+	config.Metadata.Retry.Max = 3
+	config.Metadata.Retry.Backoff = 250 * time.Millisecond
+	config.Metadata.RefreshFrequency = 10 * time.Minute
+	config.Consumer.Fetch.Min = 1
+	config.Consumer.Fetch.Default = 32768
+	config.Consumer.Retry.Backoff = 2 * time.Second
+	config.Consumer.MaxWaitTime = 250 * time.Millisecond
+	config.Consumer.Return.Errors = false
 
 	return config
 }

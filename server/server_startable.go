@@ -35,6 +35,11 @@ func Startable(cfg *ProxyConfig) error {
 
 	pcfg := &producer.KafkaProducerConfig{
 		Addrs:               brokerList,
+		MaxOpenRequests:     cfg.MaxOpenRequests,
+		DialTimeout:         cfg.NetDialTimeout,
+		ReadTimeout:         cfg.NetReadTimeout,
+		WriteTimeout:        cfg.NetWriteTimeout,
+		KeepAlive:           cfg.NetKeepAlive,
 		PartitionerStrategy: cfg.PartitionerStrategy,
 		WaitAckStrategy:     cfg.WaitAckStrategy,
 		WaitAckTimeoutMs:    cfg.WaitAckTimeoutMs,
@@ -51,23 +56,24 @@ func Startable(cfg *ProxyConfig) error {
 	}
 
 	var (
-		statMux  map[string]func(http.ResponseWriter, *http.Request)
+		//statMux  map[string]func(http.ResponseWriter, *http.Request)
 		proxyMux map[string]func(http.ResponseWriter, *http.Request)
 	)
-	statMux = make(map[string]func(http.ResponseWriter, *http.Request))
+	//statMux = make(map[string]func(http.ResponseWriter, *http.Request))
 	proxyMux = make(map[string]func(http.ResponseWriter, *http.Request))
-
-	statHttpServer := &HttpServer{
-		Addr:            ":" + cfg.StatServerPort,
-		Handler:         &HttpHandler{Mux: statMux},
-		ReadTimeout:     cfg.HttpServerReadTimeout,
-		WriteTimeout:    cfg.HttpServerWriteTimeout,
-		MaxHeaderBytes:  cfg.HttpServerMaxHeaderBytes,
-		KeepAliveEnable: cfg.HttpKeepAliveEnabled,
-		RouterFunc:      router.StatServerRouter,
-		Wg:              wg,
-		Mux:             statMux,
-	}
+	/*
+		statHttpServer := &HttpServer{
+			Addr:            ":" + cfg.StatServerPort,
+			Handler:         &HttpHandler{Mux: statMux},
+			ReadTimeout:     cfg.HttpServerReadTimeout,
+			WriteTimeout:    cfg.HttpServerWriteTimeout,
+			MaxHeaderBytes:  cfg.HttpServerMaxHeaderBytes,
+			KeepAliveEnable: cfg.HttpKeepAliveEnabled,
+			RouterFunc:      router.StatServerRouter,
+			Wg:              wg,
+			Mux:             statMux,
+		}
+	*/
 	proxyHttpServer := &HttpServer{
 		Addr:            ":" + cfg.HttpServerPort,
 		Handler:         &HttpHandler{Mux: proxyMux},
@@ -80,10 +86,10 @@ func Startable(cfg *ProxyConfig) error {
 		Mux:             proxyMux,
 	}
 
-	statHttpServer.Startup()
+	//	statHttpServer.Startup()
 	proxyHttpServer.Startup()
 
-	defer statHttpServer.Shutdown()
+	//	defer statHttpServer.Shutdown()
 	defer proxyHttpServer.Shutdown()
 
 	log.Println("MQ Proxy is running...")

@@ -19,13 +19,6 @@ type HttpServer struct {
 	Mux             map[string]func(http.ResponseWriter, *http.Request)
 }
 
-type NsheadServer struct {
-	Wg           *sync.WaitGroup
-	Addr         string
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-}
-
 func (s *HttpServer) Startup() {
 	s.Wg.Add(1)
 	go startupHttpServer(s)
@@ -33,15 +26,6 @@ func (s *HttpServer) Startup() {
 
 func (s *HttpServer) Shutdown() {
 	shutdownHttpServer(s)
-}
-
-func (s *NsheadServer) Startup() {
-	s.Wg.Add(1)
-	go startupNsheadServer(s)
-}
-
-func (s *NsheadServer) Shutdown() {
-	shutdownNsheadServer(s)
 }
 
 func startupHttpServer(hs *HttpServer) {
@@ -67,14 +51,6 @@ func startupHttpServer(hs *HttpServer) {
 	}
 }
 
-func startupNsheadServer(ns *NsheadServer) {
-	defer ns.Wg.Done()
-}
-
 func shutdownHttpServer(hs *HttpServer) {
 	//TODO: cleanup env
-}
-
-func shutdownNsheadServer(ns *NsheadServer) {
-	//TODO: nothing
 }
