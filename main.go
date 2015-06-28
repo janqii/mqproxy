@@ -32,7 +32,6 @@ func main() {
 		log.Fatalf("parse config error, %v", err)
 	}
 
-	fmt.Println(cfg)
 	if err = server.Startable(cfg); err != nil {
 		log.Fatalf("server startable error, %v", err)
 	}

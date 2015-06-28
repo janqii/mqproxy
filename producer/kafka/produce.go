@@ -3,6 +3,7 @@ package producer
 import (
 	"gopkg.in/Shopify/sarama.v1"
 	"gopkg.in/vmihailenco/msgpack.v2"
+	"log"
 	"sync"
 	"time"
 )
@@ -84,8 +85,13 @@ func (kp *KafkaProducer) SendMessage(req Request) (Response, error) {
 	}}}, nil
 }
 
-func (kp *KafkaProducer) Close() error {
-	return kp.producer.Close()
+func (kp *KafkaProducer) Close() {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("close producer error: %v", err)
+		}
+	}()
+	kp.producer.Close()
 }
 
 func NewProducerConfig(cfg *KafkaProducerConfig) *sarama.Config {

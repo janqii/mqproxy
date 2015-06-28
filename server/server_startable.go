@@ -32,7 +32,6 @@ func Startable(cfg *ProxyConfig) error {
 		log.Printf("get broker list error: %v", err)
 		return err
 	}
-
 	pcfg := &producer.KafkaProducerConfig{
 		Addrs:               brokerList,
 		MaxOpenRequests:     cfg.MaxOpenRequests,
