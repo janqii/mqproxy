@@ -12,25 +12,22 @@ go get gopkg.in/vmihailenco/msgpack.v2
 
 ```php
 <?php
-    $ch =curl_init("http://10.46.188.58:8081/trigger?log_id=132");
+    $ch =curl_init("http://127.0.0.1:9090/produce?format=json");
     curl_setopt($ch, CURLOPT_HEADER, 0);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
 
     $data = array(
-        'cmd'   => '/home/arch/local/agent/test/test.sh',
-        "type"  => "hook",
-        "env"   => array(
-            "HOST_NAME" => "tc-arch-redis.baidu.com",
-            "UNIT_ID"   => "confilter.ksarch.all"
-        ),
-        "param" => array(
-            "version"   => "1.0.0.0",
+        'topic' => 'test',
+        'partitionKey' => '123',
+        'data' => array(
+            'uid'     => 123,
+            'uname'   => 'crask',
+            'content' => 'welcome to crask',
         ),
     );
 
     $json_str = json_encode($data);
-    var_dump($json_str);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $json_str);
     $res = curl_exec($ch);
     var_dump($res);
