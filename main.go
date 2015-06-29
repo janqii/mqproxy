@@ -14,10 +14,14 @@ func usage(command string) {
 	fmt.Println("\t-v:\tPrint version")
 }
 
-func main() {
-	if len(os.Args) < 2 ||
+func checkArgs(args []string) bool {
+	return !(len(os.Args) < 2 ||
 		(os.Args[1] != "-c" && os.Args[1] != "-v") ||
-		(os.Args[1] == "-c" && len(os.Args) < 3) {
+		(os.Args[1] == "-c" && len(os.Args) < 3))
+}
+
+func main() {
+	if !checkArgs(os.Args) {
 		usage(os.Args[0])
 		os.Exit(1)
 	}
