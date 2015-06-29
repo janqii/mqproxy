@@ -39,7 +39,7 @@ func HttpProducerAction(w http.ResponseWriter, r *http.Request) {
 	} else {
 		defer func() {
 			if err := recover(); err != nil {
-				log.Printf("catch a connection panic, recover")
+				log.Printf("catch a panic: %v, recover it", err)
 				err = global.ProducerPool.Rebuild()
 				//				echo2client(w, s, resData, err)
 			}
@@ -52,8 +52,11 @@ func HttpProducerAction(w http.ResponseWriter, r *http.Request) {
 			log.Printf("producer SendMessage error, %v", err)
 			break
 		default:
-			log.Printf("producer detected closed LAN connection, panic")
-			panic("error")
+			if err == io.EOF {
+				panic("producer detected closed LAN connection, panic")
+			} else {
+				panic(err)
+			}
 			break
 		}
 	}
