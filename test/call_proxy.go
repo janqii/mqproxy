@@ -24,9 +24,9 @@ type Request struct {
 
 func main() {
 	udata := UserData{
-		uid:     123456,
-		uname:   "hanjianqi",
-		content: "hello kafka proxy",
+		uid:     123,
+		uname:   "crask",
+		content: "welcome to crask",
 	}
 
 	rdata := Request{
