@@ -12,6 +12,7 @@ go get gopkg.in/vmihailenco/msgpack.v2
 
 ###生产消息
 
+###as
 ```php
 <?php
     $ch =curl_init("http://127.0.0.1:9090/produce?format=json");
